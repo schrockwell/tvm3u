@@ -1,0 +1,13 @@
+[Unit]
+Description=VLC Media Player
+After=network.target graphical.target
+
+[Service]
+Environment="DISPLAY=:0"
+ExecStart=/usr/bin/vlc --extraintf http --http-host 127.0.0.1 --http-port 8080 --http-password tvm3u --fullscreen --no-osd --open file:///home/tvm3u/tvm3u/m3u/000_default.m3u --loop
+Restart=always
+RestartSec=5
+User=tvm3u
+
+[Install]
+WantedBy=network.target graphical.target

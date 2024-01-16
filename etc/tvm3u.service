@@ -1,0 +1,10 @@
+[Unit]
+Description=TVM3U Server
+
+[Service]
+ExecStart=/home/tvm3u/tvm3u/bin/tvm3u
+Restart=always
+User=tvm3u
+
+[Install]
+WantedBy=graphical.target
