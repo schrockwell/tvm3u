@@ -1,3 +1,5 @@
+#! /usr/bin/env ruby
+
 require_relative 'lib/app_state'
 require_relative 'lib/server'
 require_relative 'lib/vlc_control'
