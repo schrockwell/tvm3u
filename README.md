@@ -1,4 +1,4 @@
-# TVM3U
+# 📺 TVM3U
 
 ## Un-time-shift your content.
 
@@ -11,6 +11,8 @@ This little Sinatra app:
 There is a "sleep timer" that automatically puases playback 2 hours after the latest command was given.
 
 ## Endpoints
+
+HTTP port: 1337
 
 - Playlists
   - `/channel/current.m3u` - fetch current channel
@@ -25,3 +27,4 @@ There is a "sleep timer" that automatically puases playback 2 hours after the la
 ## Requirements
 
 - VLC running with the HTTP control on port 8080 with password `tvm3u`.
+- Playlists in the `m3u` folder (see the README there for details).
