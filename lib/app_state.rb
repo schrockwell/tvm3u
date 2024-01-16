@@ -8,7 +8,7 @@ class AppState
   end
 
   def initialize
-    read_state
+    generate_default_channel_m3u
     @channel_index = 0
     @channels = Dir.glob('m3u/*.m3u')
   end
@@ -57,14 +57,14 @@ class AppState
 
   private
 
-  def read_state
-    state = JSON.parse(File.read('state.json'))
-    @epoch = Time.at(state['epoch'] || Time.now)
-  end
+  def generate_default_channel_m3u
+    contents = """
+    #EXTM3U
+    #EXTINF:10,SMPTE Color Bars
+    file://#{File.expand_path('color-bars.png')}
+    """
 
-  def write_state
-    state = { epoch: @epoch }
-    File.write('state.json', state.to_json)
+    File.write('m3u/000_default.m3u', contents)
   end
 
   def current_channel
@@ -72,7 +72,7 @@ class AppState
   end
 
   def time_elapsed
-    Time.now - @epoch
+    Time.now.to_i
   end
 
   def get_m3u_items(path)
@@ -93,6 +93,12 @@ class AppState
       else
         acc += line
       end
+    end
+
+    # Add the last item
+    if acc != ''
+      item = { text: acc, duration: item_duration(acc) }
+      items << item
     end
 
     items
