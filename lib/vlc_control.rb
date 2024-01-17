@@ -19,7 +19,7 @@ class VLCControl
     # VLC must be configured with HTTP access (port 8080 by default) and password 'tvm3u'
 
     # Clear the playlist (commented out, because it causes VLC to break out of fullscreen)
-    # curl("?command=pl_empty")
+    curl("?command=pl_empty")
 
     # Open the new playlist
     resp = curl("?command=in_play&input=http://127.0.0.1:1337/channel/#{name}.m3u")
