@@ -8,13 +8,11 @@ class AppState
   end
 
   def initialize
-    generate_default_channel_m3u
-    @channel_index = 0
-    @channels = Dir.glob('m3u/*.m3u')
+    @current_channel = generate_default_channel_m3u
   end
 
   def current_m3u
-    items = get_m3u_items(current_channel).to_a
+    items = get_m3u_items(@current_channel).to_a
     total_time = total_time(items)
     current_time = time_elapsed % total_time
 
@@ -51,7 +49,15 @@ class AppState
   end
 
   def next_m3u(diff)
-    @channel_index = (@channel_index + diff) % @channels.length
+    channels = Dir.glob('m3u/*.m3u')
+    current_channel_index = channels.index(@current_channel)
+    next_channel_index = 0
+
+    if current_channel_index
+      next_channel_index = (current_channel_index + diff) % channels.length
+    end
+
+    @current_channel = channels[next_channel_index]
     current_m3u
   end
 
@@ -65,10 +71,7 @@ class AppState
     """
 
     File.write('m3u/000_default.m3u', contents)
-  end
-
-  def current_channel
-    @channels[@channel_index]
+    'm3u/000_default.m3u'
   end
 
   def time_elapsed
