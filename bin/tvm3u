@@ -7,7 +7,7 @@ require_relative '../lib/vlc_control'
 if __FILE__ == $0
   Thread.new do
     sleep 1
-    VLCControl.instance.go_to_channel('current')
+    VLCControl.instance.reload_channel
   end
   
   Server.run!

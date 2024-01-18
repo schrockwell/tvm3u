@@ -15,17 +15,22 @@ class VLCControl
     end
   end
 
-  def go_to_channel(name)
+  def reload_channel
     # VLC must be configured with HTTP access (port 8080 by default) and password 'tvm3u'
 
+    url = "http://127.0.0.1:1337/channel/current.m3u"
+    `DISPLAY=:0 /usr/bin/vlc --extraintf http --http-host 127.0.0.1 --http-port 8080 --http-password tvm3u --fullscreen --no-osd --loop --one-instance '#{url}'`
+
+    # `DISPLAY=:0 /usr/bin/vlc --extraintf http --http-host 127.0.0.1 --http-port 8080 --http-password tvm3u --fullscreen --no-osd --loop --one-instance '#{path}'`
+
     # Clear the playlist (commented out, because it causes VLC to break out of fullscreen)
-    curl("?command=pl_empty")
+    # curl("?command=pl_empty")
 
     # Open the new playlist
-    resp = curl("?command=in_play&input=http://127.0.0.1:1337/channel/#{name}.m3u")
+    # resp = curl("?command=in_play&input=http://127.0.0.1:1337/channel/#{name}.m3u")
 
     # Ensure looping is on
-    toggle_loop if resp.include?('<loop>false</loop>')
+    # toggle_loop if resp.include?('<loop>false</loop>')
   end
   
   def pause

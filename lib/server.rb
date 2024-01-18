@@ -21,21 +21,23 @@ class Server < Sinatra::Base
 
   get '/go/next' do
     puts '--> Channel Up'
-    VLCControl.instance.go_to_channel('next')
+    AppState.instance.advance_channel(1)
+    VLCControl.instance.reload_channel()
     VLCControl.instance.reset_sleep_timer
     'OK'
   end
   
   get '/go/prev' do
     puts '--> Channel down'
-    VLCControl.instance.go_to_channel('prev')
+    AppState.instance.advance_channel(-1)
+    VLCControl.instance.reload_channel()
     VLCControl.instance.reset_sleep_timer
     'OK'
   end
 
   get '/go/play' do
     puts '--> Play'
-    VLCControl.instance.go_to_channel('current')
+    VLCControl.instance.reload_channel()
     VLCControl.instance.reset_sleep_timer
     'OK'
   end

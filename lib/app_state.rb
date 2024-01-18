@@ -48,16 +48,25 @@ class AppState
     ].flatten.join
   end
 
-  def next_m3u(diff)
+  def current_channel
+    File.expand_path(@current_channel)
+  end
+
+  def advance_channel(diff)
     channels = Dir.glob('m3u/*.m3u')
     current_channel_index = channels.index(@current_channel)
     next_channel_index = 0
-
+  
     if current_channel_index
       next_channel_index = (current_channel_index + diff) % channels.length
     end
-
+  
     @current_channel = channels[next_channel_index]
+    current_channel
+  end
+
+  def next_m3u(diff)
+    advance_channel(diff)
     current_m3u
   end
 
