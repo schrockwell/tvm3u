@@ -1,7 +1,11 @@
 require 'json'
+require 'socket'
 
 class TVM3U
   SLEEP_TIMER = 60 * 60 * 2 # 2 hours
+  CROPS = ['0:0', '4:3', '2:1']
+
+  attr_reader :cropped
 
   def self.instance
     @@instance ||= TVM3U.new
@@ -12,14 +16,23 @@ class TVM3U
   end
 
   def initialize
+    @crop = CROPS.first
     generate_default_channel_m3u
     go_to_default_channel
     reset_sleep_timer
+    start_vlc
+  end
+
+  def start_vlc
+    url = "http://127.0.0.1:1337/channel/current.m3u"
+    `DISPLAY=:0 /usr/bin/cvlc --fullscreen --no-osd --loop --one-instance --extraintf rc --rc-host localhost:2222 '#{url}'`
   end
 
   def reload
-    url = "http://127.0.0.1:1337/channel/current.m3u"
-    `DISPLAY=:0 /usr/bin/vlc --fullscreen --no-osd --loop --one-instance '#{url}'`
+    socket = TCPSocket.new('localhost', 2222)
+    socket.puts "clear"
+    socket.puts "add http://127.0.0.1:1337/channel/current.m3u"
+    socket.close
   end
 
   def reset_sleep_timer
@@ -30,6 +43,15 @@ class TVM3U
       TVM3U.go_to_default_channel
       reload
     end
+  end
+
+  def toggle_crop
+    next_crop_index = (CROPS.index(@crop) + 1) % CROPS.length
+    @crop = CROPS[next_crop_index]
+
+    socket = TCPSocket.new('localhost', 2222)
+    socket.puts "crop #{@crop}"
+    socket.close
   end
   
   def current_m3u

@@ -16,7 +16,7 @@ class Server < Sinatra::Base
   end
 
   # Controlled by user
-  get '/go/next' do
+  post '/go/next' do
     puts '--> Channel up'
     TVM3U.advance_channel(1)
     TVM3U.reload
@@ -25,11 +25,17 @@ class Server < Sinatra::Base
   end
   
   # Controlled by user
-  get '/go/prev' do
+  post '/go/prev' do
     puts '--> Channel down'
     TVM3U.advance_channel(-1)
     TVM3U.reload
     TVM3U.reset_sleep_timer
+    send_file 'web/index.html'
+  end
+  
+  post '/toggle-crop' do
+    puts '--> Toggle crop'
+    TVM3U.toggle_crop
     send_file 'web/index.html'
   end
 end
