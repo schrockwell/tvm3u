@@ -1,13 +1,12 @@
 #! /usr/bin/env ruby
 
-require_relative '../lib/app_state'
+require_relative '../lib/tvm3u'
 require_relative '../lib/server'
-require_relative '../lib/vlc_control'
 
 if __FILE__ == $0
   Thread.new do
     sleep 1
-    VLCControl.instance.reload_channel
+    TVM3U.reload
   end
   
   Server.run!

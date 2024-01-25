@@ -1,16 +1,37 @@
 require 'json'
 
-class AppState
-  attr_reader :epoch
+class TVM3U
+  SLEEP_TIMER = 60 * 60 * 2 # 2 hours
 
   def self.instance
-    @@instance ||= AppState.new
+    @@instance ||= TVM3U.new
+  end
+
+  def self.method_missing(method, *args, &block)
+    instance.send(method, *args, &block)
   end
 
   def initialize
-    @current_channel = generate_default_channel_m3u
+    generate_default_channel_m3u
+    go_to_default_channel
+    reset_sleep_timer
   end
 
+  def reload
+    url = "http://127.0.0.1:1337/channel/current.m3u"
+    `DISPLAY=:0 /usr/bin/vlc --fullscreen --no-osd --loop --one-instance '#{url}'`
+  end
+
+  def reset_sleep_timer
+    @sleep_thread.kill if @sleep_thread
+    @sleep_thread = Thread.new do
+      sleep(SLEEP_TIMER)
+      puts '--> Going to sleep'
+      TVM3U.go_to_default_channel
+      reload
+    end
+  end
+  
   def current_m3u
     items = get_m3u_items(@current_channel).to_a
     total_time = total_time(items)
@@ -48,8 +69,8 @@ class AppState
     ].flatten.join
   end
 
-  def current_channel
-    File.expand_path(@current_channel)
+  def go_to_default_channel
+    @current_channel = default_m3u_path
   end
 
   def advance_channel(diff)
@@ -65,12 +86,11 @@ class AppState
     current_channel
   end
 
-  def next_m3u(diff)
-    advance_channel(diff)
-    current_m3u
-  end
-
   private
+
+  def current_channel
+    File.expand_path(@current_channel)
+  end
 
   def generate_default_channel_m3u
     contents = """
@@ -79,7 +99,11 @@ class AppState
     file://#{File.expand_path('color-bars.png')}
     """
 
-    File.write('m3u/000_default.m3u', contents)
+    File.write(default_m3u_path, contents)
+    default_m3u_path
+  end
+
+  def default_m3u_path
     'm3u/000_default.m3u'
   end
 

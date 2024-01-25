@@ -4,47 +4,32 @@ class Server < Sinatra::Base
   set :port, 1337
   set :bind, '0.0.0.0'
   
+  # Fetched from VLC
   get '/channel/current.m3u' do
     content_type 'audio/x-mpegurl'
-    AppState.instance.current_m3u
+    TVM3U.current_m3u
   end
 
-  get '/channel/next.m3u' do
-    content_type 'audio/x-mpegurl'
-    AppState.instance.next_m3u(1)
+  # Controlled by user
+  get '/' do
+    send_file 'web/index.html'
   end
 
-  get '/channel/prev.m3u' do
-    content_type 'audio/x-mpegurl'
-    AppState.instance.next_m3u(-1)
-  end
-
+  # Controlled by user
   get '/go/next' do
-    puts '--> Channel Up'
-    AppState.instance.advance_channel(1)
-    VLCControl.instance.reload_channel()
-    VLCControl.instance.reset_sleep_timer
-    'OK'
+    puts '--> Channel up'
+    TVM3U.advance_channel(1)
+    TVM3U.reload
+    TVM3U.reset_sleep_timer
+    send_file 'web/index.html'
   end
   
+  # Controlled by user
   get '/go/prev' do
     puts '--> Channel down'
-    AppState.instance.advance_channel(-1)
-    VLCControl.instance.reload_channel()
-    VLCControl.instance.reset_sleep_timer
-    'OK'
-  end
-
-  get '/go/play' do
-    puts '--> Play'
-    VLCControl.instance.reload_channel()
-    VLCControl.instance.reset_sleep_timer
-    'OK'
-  end
-
-  get '/go/pause' do
-    puts '--> Pause'
-    VLCControl.instance.pause
-    'OK'
+    TVM3U.advance_channel(-1)
+    TVM3U.reload
+    TVM3U.reset_sleep_timer
+    send_file 'web/index.html'
   end
 end

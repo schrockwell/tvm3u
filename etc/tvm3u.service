@@ -1,5 +1,6 @@
 [Unit]
 Description=TVM3U Server
+After=multi-user.target
 
 [Service]
 ExecStart=/home/tvm3u/tvm3u/bin/tvm3u
@@ -8,4 +9,4 @@ Restart=always
 User=tvm3u
 
 [Install]
-WantedBy=graphical.target
+WantedBy=default.target
