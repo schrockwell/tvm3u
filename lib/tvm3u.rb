@@ -28,7 +28,17 @@ class TVM3U
 
   def start
     url = "http://127.0.0.1:1337/channel/current.m3u"
-    `DISPLAY=:0 /usr/bin/cvlc --fullscreen --no-osd --loop --one-instance --extraintf rc --rc-host localhost:2222 '#{url}'`
+
+    options = [
+      # The obvious ones
+      '--fullscreen --no-osd --loop --one-instance',
+      # Enable the remote control (RC) telnet interface on localhost:2222
+      '--extraintf rc --rc-host localhost:2222',
+      # Set the pixel aspect ratio to 1:1.125 to account for the fact that CRT pixels are NOT square!!
+      '--monitor-par 1000:1125'
+    ]
+
+    `DISPLAY=:0 /usr/bin/cvlc #{options.join(' ')} '#{url}'`
   end
 
   def reload
