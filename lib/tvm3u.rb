@@ -33,21 +33,39 @@ class TVM3U
       # The obvious ones
       '--fullscreen --no-osd --loop --one-instance',
       # Set a nonsensical subtitle track number to effectively disable subtitles (https://askubuntu.com/a/950863)
-      '--sub-track 999'
+      '--sub-track 999',
       # Enable the remote control (RC) telnet interface on localhost:2222
       '--extraintf rc --rc-host localhost:2222',
       # Set the pixel aspect ratio to 1:1.125 to account for the fact that CRT pixels are NOT square!!
       '--monitor-par 1000:1125'
     ]
 
+    Thread.new do
+      loop do
+        begin
+          @rc_socket = TCPSocket.new('localhost', 2222)
+          puts "RC socket connected"
+        rescue
+          sleep(0.1)
+          next
+        end
+
+        break
+      end
+    end
+
     `DISPLAY=:0 /usr/bin/cvlc #{options.join(' ')} '#{url}'`
   end
 
   def reload
-    socket = TCPSocket.new('localhost', 2222)
-    socket.puts "clear"
-    socket.puts "add http://127.0.0.1:1337/channel/current.m3u"
-    socket.close
+    unless @rc_socket
+      puts 'RC socket not connected'
+      return
+    end
+
+    @rc_socket.puts "clear"
+    @rc_socket.puts "add http://127.0.0.1:1337/channel/current.m3u"
+    @rc_socket.puts "crop #{@crop}"
   end
 
   def reset_sleep_timer
@@ -61,12 +79,10 @@ class TVM3U
   end
 
   def toggle_crop
-    next_crop_index = (CROPS.index(@crop) + 1) % CROPS.length
+    next_crop_index = ((CROPS.index(@crop) || -1) + 1) % CROPS.length
     @crop = CROPS[next_crop_index]
 
-    socket = TCPSocket.new('localhost', 2222)
-    socket.puts "crop #{@crop}"
-    socket.close
+    @rc_socket.puts "crop #{@crop}" if @rc_socket
   end
   
   def current_m3u
@@ -105,7 +121,7 @@ class TVM3U
       # first episode again (end part-way through)
       "#EXTVLCOPT:end-time=#{item_end_time}\n",
       items[found_index][:text],
-    ].flatten.join
+    ].flatten.compact.join
   end
 
   def go_to_default_channel
@@ -122,6 +138,10 @@ class TVM3U
     end
   
     @current_channel = channels[next_channel_index]
+
+    # look for "crop-XX-YY" in filename for XX:YY ratio
+    crop_match = @current_channel.match(/crop-(\d+)-(\d+)/)
+    @crop = crop_match ? "#{crop_match[1]}:#{crop_match[2]}" : '0:0'
   end
 
   private
@@ -129,6 +149,7 @@ class TVM3U
   def default_channel_m3u
     contents = """
     #EXTM3U
+    #EXTVLCOPT:crop=0:0
     #EXTINF:10,SMPTE Color Bars
     file://#{File.expand_path('color-bars.png')}
     """
