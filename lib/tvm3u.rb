@@ -32,6 +32,8 @@ class TVM3U
     options = [
       # The obvious ones
       '--fullscreen --no-osd --loop --one-instance',
+      # Set a nonsensical subtitle track number to effectively disable subtitles (https://askubuntu.com/a/950863)
+      '--sub-track 999'
       # Enable the remote control (RC) telnet interface on localhost:2222
       '--extraintf rc --rc-host localhost:2222',
       # Set the pixel aspect ratio to 1:1.125 to account for the fact that CRT pixels are NOT square!!
