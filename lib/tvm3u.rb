@@ -17,13 +17,16 @@ class TVM3U
 
   def initialize
     @crop = CROPS.first
-    generate_default_channel_m3u
+    @m3u_dir = 'm3u'
     go_to_default_channel
     reset_sleep_timer
-    start_vlc
   end
 
-  def start_vlc
+  def configure(opts = {})
+    @m3u_dir = opts[:m3u_dir] if opts[:m3u_dir]
+  end
+
+  def start
     url = "http://127.0.0.1:1337/channel/current.m3u"
     `DISPLAY=:0 /usr/bin/cvlc --fullscreen --no-osd --loop --one-instance --extraintf rc --rc-host localhost:2222 '#{url}'`
   end
@@ -55,6 +58,8 @@ class TVM3U
   end
   
   def current_m3u
+    return default_channel_m3u if @current_channel == :default
+
     items = get_m3u_items(@current_channel).to_a
     total_time = total_time(items)
     current_time = time_elapsed % total_time
@@ -92,11 +97,11 @@ class TVM3U
   end
 
   def go_to_default_channel
-    @current_channel = default_m3u_path
+    @current_channel = :default
   end
 
   def advance_channel(diff)
-    channels = Dir.glob('m3u/*.m3u')
+    channels = Dir.glob(File.join(@m3u_dir, '*.m3u'))
     current_channel_index = channels.index(@current_channel)
     next_channel_index = 0
   
@@ -105,28 +110,16 @@ class TVM3U
     end
   
     @current_channel = channels[next_channel_index]
-    current_channel
   end
 
   private
 
-  def current_channel
-    File.expand_path(@current_channel)
-  end
-
-  def generate_default_channel_m3u
+  def default_channel_m3u
     contents = """
     #EXTM3U
     #EXTINF:10,SMPTE Color Bars
     file://#{File.expand_path('color-bars.png')}
     """
-
-    File.write(default_m3u_path, contents)
-    default_m3u_path
-  end
-
-  def default_m3u_path
-    'm3u/000_default.m3u'
   end
 
   def time_elapsed

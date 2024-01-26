@@ -4,9 +4,16 @@ require_relative '../lib/tvm3u'
 require_relative '../lib/server'
 
 if __FILE__ == $0
+  if ARGV.length == 0
+    puts "Usage: tvm3u <m3u directory>"
+    exit 1
+  end
+
+  TVM3U.configure(m3u_dir: ARGV[0])
+
   Thread.new do
     sleep 1
-    TVM3U.reload
+    TVM3U.start
   end
   
   Server.run!
